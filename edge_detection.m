@@ -1,4 +1,4 @@
-im0 = imread('0.jpg');
+im0 = imread('5.jpg');
 imp0 = imread('ppt.jpg');
 imgray = rgb2gray(im0);
 norm_gradient = edgeDetection(imgray);
