@@ -38,8 +38,8 @@ def crop_image(im, w, h):
         return im
     else:
         return im[idx1+6:idx2 + h_mid, idx3+6:idx4 + w_mid]
-img = cv.imread(os.path.join("Dataset/02_2/ppt.jpg"))
-sl = cv.imread(os.path.join("Dataset/02_1/1.jpg"))
+img = cv.imread(os.path.join("Dataset/14_2/ppt.jpg"))
+sl = cv.imread(os.path.join("Dataset/14_16/ppt.jpg"))
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 sl = cv.cvtColor(sl, cv.COLOR_BGR2GRAY)
 x = edge_detection(img)

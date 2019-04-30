@@ -14,8 +14,8 @@ from tqdm import tqdm
 # norm_gradient = uint8(round(255*(gradient-min_val)/(max_val-min_val)));
 # end
 def edge_detection(im):
-    dx = cv.filter2D(im, -1, np.matrix('-1 0 1; -2 0 2; -1 0 1'))
-    dy = cv.filter2D(im, -1, np.matrix('-1 -2 -1; 0 0 0; 1 2 1'))
+    dx = cv.Sobel(im, cv.CV_64F, 1, 0, ksize=5)
+    dy = cv.Sobel(im, cv.CV_64F, 0, 1, ksize=5)
     gradient = np.sqrt(np.multiply(dx, dx) + np.multiply(dy, dy))
     max_val = np.amax(gradient)
     min_val = np.amin(gradient)
@@ -25,24 +25,24 @@ def edge_detection(im):
 
 
 def crop_image(im, w, h):
-    colsum = np.sum(im, axis=0)
-    rowsum = np.sum(im, axis=1)
+    colsum = np.sum(im, axis=1)
+    rowsum = np.sum(im, axis=0)
     w_mid = w // 2
     h_mid = h // 2
-    idx1 = np.argmax(colsum[6:w_mid])
-    idx2 = np.argmax(colsum[w_mid:w - 6])
-    idx3 = np.argmax(rowsum[6:h_mid])
-    idx4 = np.argmax(rowsum[h_mid:h - 6])
-    val1 = colsum[idx1]
-    val2 = colsum[idx2]
-    val3 = rowsum[idx3]
-    val4 = rowsum[idx4]
-    if val1 + val2 + val3 + val4 < 100000:
+    idx1 = np.argmax(colsum[6:h_mid])
+    idx2 = np.argmax(colsum[h_mid:h - 6])
+    idx3 = np.argmax(rowsum[6:w_mid])
+    idx4 = np.argmax(rowsum[w_mid:w - 6])
+    val1 = colsum[idx1+6]
+    val2 = colsum[idx2+h_mid]
+    val3 = rowsum[6+idx3]
+    val4 = rowsum[idx4+w_mid]
+    # print(rowsum.size)
+    # print(val1+val2+val3+val4, idx1, idx2, idx3, idx4)
+    if val1 + val2 + val3 + val4 < 10000:
         return im
     else:
-        return im[idx1:idx2 - idx1 + w_mid, idx3:idx4 - idx3 + h_mid]
-
-
+        return im[idx1+6:idx2 + h_mid, idx3+6:idx4 + w_mid]
 def testing():
     slides = []
     slide_name = []
@@ -61,7 +61,7 @@ def testing():
             edgy = edge_detection(imgray)
             if filename == 'ppt.jpg':
                 img = crop_image(edgy, w, h)
-                ppt.append(imgray)
+                ppt.append(img)
                 ppt_name.append(folder+filename)
             else:
                 img = crop_image(edgy, w, h)
@@ -70,22 +70,26 @@ def testing():
                 index = index + 1
         ans_range.append((index_start, index-1))
     slide_index = 0
-    for img in tqdm(slides):
-        mx = -100000.0
+    for img in slides:
+        mx = 100000.0
         idx = -1
         ppt_index = 0
         for possibility in ppt:
             # print(img.shape, possibility.size)
             h, w = img.shape 
-            # cur_max = (np.square(img - cv.resize(possibility, (w, h)))).mean(axis=None)
-            cur_max = np.amax(np.corrcoef(img, cv.resize(possibility, (w, h))))
-            if cur_max > mx:
+            cur_max = (np.square(img - cv.resize(possibility, (w, h)))).mean(axis=None)
+            # cur_max = np.amax(np.corrcoef(img, cv.resize(possibility, (w, h))))
+            # print(cur_max,mx)
+            if cur_max < mx:
                 mx = cur_max
                 idx = ppt_index
             ppt_index = ppt_index + 1
+            # print(cur_max)
         if ans_range[idx][0] > slide_index or ans_range[idx][1] < slide_index:
-            print(ans_range[slide_index], slide_index)
-            print("Error ",slide_name[slide_index], " ",ppt_name[idx])
+            slide_index = slide_index + 1
+            continue
+            # print(ans_range[idx], slide_index)
+            # print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
         else:
             print(slide_name[slide_index])
         slide_index = slide_index + 1
