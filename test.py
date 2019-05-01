@@ -74,10 +74,10 @@ def testing():
             if filename == 'ppt.jpg':
                 img = crop_image(edgy, w, h)
                 ppt.append(img)
-                ppt_name.append(folder+"/"+filename)
+                ppt_name.append(folder+" "+filename)
             else:
                 img = crop_image(edgy, w, h)
-                slide_name.append(folder+"/"+filename)
+                slide_name.append(folder+" "+filename)
                 slides.append(img)
                 index = index + 1
         ans_range.append((index_start, index-1))
@@ -120,8 +120,8 @@ def testing():
             newpath = os.path.join("Error_v3", str(wrong))
             if not os.path.exists(newpath):
                 os.makedirs(newpath)
-            cv.imwrite(os.path.join(newpath , slide_name[slide_index]), slides[slide_index])
-            cv.imwrite(os.path.join(newpath , ppt_name[ppt_index]), ppt[idx])
+            cv.imwrite(os.path.join(newpath , str(slide_name[slide_index])), slides[slide_index])
+            cv.imwrite(os.path.join(newpath , str(ppt_name[idx])), ppt[idx])
             wrong = wrong + 1
             # f.write(str(slide_name[slide_index]) + " " + str(ppt_name[idx])+"\n")
         else:
