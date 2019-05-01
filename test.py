@@ -123,7 +123,6 @@ def testing():
             cv.imwrite(os.path.join(newpath , str(slide_name[slide_index])), slides[slide_index])
             cv.imwrite(os.path.join(newpath , str(ppt_name[idx])), ppt[idx])
             wrong = wrong + 1
-            # f.write(str(slide_name[slide_index]) + " " + str(ppt_name[idx])+"\n")
         else:
             correct = correct + 1
             print(slide_name[slide_index])
