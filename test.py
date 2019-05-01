@@ -13,16 +13,6 @@ import math
 # min_val = min(min(gradient));
 # norm_gradient = uint8(round(255*(gradient-min_val)/(max_val-min_val)));
 # end
-def conv2(a,b):
-    ma,na = a.shape
-    mb,nb = b.shape
-    return np.fft.ifft2(np.fft.fft2(a,[2*ma-1,2*na-1])*np.fft.fft2(b,[2*mb-1,2*nb-1]))
-def normxcorr2(b,a):
-    c = conv2(a,np.flipud(np.fliplr(b)))
-    a = conv2(a**2, np.ones(b.shape))
-    b = sum(b.flatten()**2)
-    c = c/np.sqrt(a*b)
-    return c
 
 def edge_detection(im):
     dx = cv.Sobel(im, cv.CV_64F, 1, 0, ksize=5)
@@ -72,11 +62,13 @@ def testing():
             h, w, _ = img.shape
             edgy = edge_detection(imgray)
             if filename == 'ppt.jpg':
-                img = crop_image(edgy, w, h)
+                # img = crop_image(edgy, w, h)
+                img = edgy
                 ppt.append(img)
                 ppt_name.append(folder+" "+filename)
             else:
-                img = crop_image(edgy, w, h)
+                # img = crop_image(edgy, w, h)
+                img = edgy
                 slide_name.append(folder+" "+filename)
                 slides.append(img)
                 index = index + 1
@@ -98,10 +90,12 @@ def testing():
             # cur_max = (np.corrcoef(img, cv.resize(possibility, (w, h))))[1][0]
             # print(cur_max,mx)
             img_mean = img.mean()
-            img_normalized = [x - img_mean for x in img]
+            img_dev = img.std()
+            img_normalized = [(x - img_mean)/img_dev for x in img]
             resized_possibility = cv.resize(possibility, (w, h))
             resized_mean = resized_possibility.mean()
-            resized_normalized = [x - resized_mean for x in resized_possibility]
+            resized_dev = resized_possibility.std()
+            resized_normalized = [(x - resized_mean)/resized_dev for x in resized_possibility]
             numerator = np.sum(np.multiply(img_normalized, resized_possibility))
             denominator = np.sqrt(np.multiply(np.sum(np.square(img_normalized)), 
                 np.sum(np.square(resized_possibility))))
@@ -117,7 +111,7 @@ def testing():
             # continue
             print(ans_range[idx], slide_index)
             print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
-            newpath = os.path.join("Error_v3", str(wrong))
+            newpath = os.path.join("Error_v5", str(wrong))
             if not os.path.exists(newpath):
                 os.makedirs(newpath)
             cv.imwrite(os.path.join(newpath , str(slide_name[slide_index])), slides[slide_index])
