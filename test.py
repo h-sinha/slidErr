@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pprint import *
 from tqdm import tqdm
-
+import math
 # dst = cv2.filter2D(img,-1,kernel)
 # dx = conv2([-1 0 1; -2 0 2; -1 0 1], imgray);
 # dy = conv2([-1 -2 -1; 0 0 0; 1 2 1], imgray);
@@ -13,6 +13,17 @@ from tqdm import tqdm
 # min_val = min(min(gradient));
 # norm_gradient = uint8(round(255*(gradient-min_val)/(max_val-min_val)));
 # end
+def conv2(a,b):
+    ma,na = a.shape
+    mb,nb = b.shape
+    return np.fft.ifft2(np.fft.fft2(a,[2*ma-1,2*na-1])*np.fft.fft2(b,[2*mb-1,2*nb-1]))
+def normxcorr2(b,a):
+    c = conv2(a,np.flipud(np.fliplr(b)))
+    a = conv2(a**2, np.ones(b.shape))
+    b = sum(b.flatten()**2)
+    c = c/np.sqrt(a*b)
+    return c
+
 def edge_detection(im):
     dx = cv.Sobel(im, cv.CV_64F, 1, 0, ksize=5)
     dy = cv.Sobel(im, cv.CV_64F, 0, 1, ksize=5)
@@ -70,26 +81,37 @@ def testing():
                 index = index + 1
         ans_range.append((index_start, index-1))
     slide_index = 0
-    for img in slides:
-        mx = 100000.0
+    for img in tqdm(slides):
+        mx = -100000.0
         idx = -1
         ppt_index = 0
         for possibility in ppt:
             # print(img.shape, possibility.size)
             h, w = img.shape 
-            cur_max = (np.square(img - cv.resize(possibility, (w, h)))).mean(axis=None)
-            # cur_max = np.amax(np.corrcoef(img, cv.resize(possibility, (w, h))))
+            # cur_max = (np.square(img - cv.resize(possibility, (w, h)))).mean(axis=None)
+            # print((np.corrcoef(img, cv.resize(possibility, (w, h)))).dtype)
+            # cur_max = (np.corrcoef(img, cv.resize(possibility, (w, h))))[1][0]
             # print(cur_max,mx)
-            if cur_max < mx:
+            img_mean = img.mean()
+            img_normalized = [x - img_mean for x in img]
+            resized_possibility = cv.resize(possibility, (w, h))
+            resized_mean = resized_possibility.mean()
+            resized_normalized = [x - resized_mean for x in resized_possibility]
+            numerator = np.sum(np.multiply(img_normalized, resized_possibility))
+            denominator = np.sqrt(np.multiply(np.sum(np.square(img_normalized)), 
+                np.sum(np.square(resized_possibility))))
+            cur_max = numerator/denominator
+            # print(numerator, denominator, cur_max)
+            if cur_max > mx:
                 mx = cur_max
                 idx = ppt_index
             ppt_index = ppt_index + 1
             # print(cur_max)
         if ans_range[idx][0] > slide_index or ans_range[idx][1] < slide_index:
-            slide_index = slide_index + 1
-            continue
-            # print(ans_range[idx], slide_index)
-            # print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
+            # slide_index = slide_index + 1
+            # continue
+            print(ans_range[idx], slide_index)
+            print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
         else:
             print(slide_name[slide_index])
         slide_index = slide_index + 1
