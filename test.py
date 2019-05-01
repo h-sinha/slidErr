@@ -50,7 +50,8 @@ def crop_image(im, w, h):
     val4 = rowsum[idx4+w_mid]
     # print(rowsum.size)
     # print(val1+val2+val3+val4, idx1, idx2, idx3, idx4)
-    if val1 + val2 + val3 + val4 < 10000:
+    threshold = np.double(0.02)
+    if val1 + val2 + val3 + val4 < threshold*np.double(np.sum(colsum)):
         return im
     else:
         return im[idx1+6:idx2 + h_mid, idx3+6:idx4 + w_mid]
@@ -61,7 +62,7 @@ def testing():
     ppt_name = []
     ans_range = []
     index = 0
-    for folder in os.listdir('Dataset'):
+    for folder in tqdm(os.listdir('Dataset')):
         index_start = index
         for filename in os.listdir('Dataset/' + folder):
             img = cv.imread(os.path.join("Dataset", folder, filename))
@@ -73,14 +74,18 @@ def testing():
             if filename == 'ppt.jpg':
                 img = crop_image(edgy, w, h)
                 ppt.append(img)
-                ppt_name.append(folder+filename)
+                ppt_name.append(folder+"/"+filename)
             else:
                 img = crop_image(edgy, w, h)
-                slide_name.append(folder+filename)
+                slide_name.append(folder+"/"+filename)
                 slides.append(img)
                 index = index + 1
         ans_range.append((index_start, index-1))
     slide_index = 0
+    correct = 0
+    wrong = 0
+    # f = open("errors_v2.txt", "a+")
+    # f.write("Slide name --- Ppt name predicted")
     for img in tqdm(slides):
         mx = -100000.0
         idx = -1
@@ -112,7 +117,17 @@ def testing():
             # continue
             print(ans_range[idx], slide_index)
             print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
+            newpath = os.path.join("Error_v3", str(wrong))
+            if not os.path.exists(newpath):
+                os.makedirs(newpath)
+            cv.imwrite(os.path.join(newpath , slide_name[slide_index]), slides[slide_index])
+            cv.imwrite(os.path.join(newpath , ppt_name[ppt_index]), ppt[idx])
+            wrong = wrong + 1
+            # f.write(str(slide_name[slide_index]) + " " + str(ppt_name[idx])+"\n")
         else:
+            correct = correct + 1
             print(slide_name[slide_index])
         slide_index = slide_index + 1
+    print("Correct : ", correct, "Wrong : ", wrong, "Total : ", correct+wrong)
 testing()
+#09_322.jpg   08_1ppt.jpg
