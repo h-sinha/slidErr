@@ -7,6 +7,7 @@ from tqdm import tqdm
 import math
 
 def edge_detection(im):
+    im = cv.adaptiveThreshold(im, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
     dx = cv.Sobel(im, cv.CV_64F, 1, 0, ksize=5)
     dy = cv.Sobel(im, cv.CV_64F, 0, 1, ksize=5)
     gradient = np.sqrt(np.multiply(dx, dx) + np.multiply(dy, dy))
@@ -14,6 +15,9 @@ def edge_detection(im):
     min_val = np.amin(gradient)
     norm_gradient = np.around(255 * (gradient - min_val) / (max_val - min_val))
     norm_gradient = norm_gradient.astype(np.uint8)
+    # norm_gradient = cv.bilateralFilter(norm_gradient,9,75,75)
+    # norm_gradient = cv.GaussianBlur( norm_gradient, (3,3), 0);
+    # norm_gradient = cv.medianBlur(norm_gradient,5)
     return norm_gradient
 
 
@@ -44,7 +48,7 @@ def testing():
     ppt_name = []
     ans_range = []
     index = 0
-    img = cv.imread(os.path.join("Dataset", "02_19", "3.jpg"))
+    img = cv.imread(os.path.join("Dataset", "12_9", "1.jpg"))
     h, w, _ = img.shape
     imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     edgy = edge_detection(imgray)

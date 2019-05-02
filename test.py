@@ -5,16 +5,10 @@ import numpy as np
 from pprint import *
 from tqdm import tqdm
 import math
-# dst = cv2.filter2D(img,-1,kernel)
-# dx = conv2([-1 0 1; -2 0 2; -1 0 1], imgray);
-# dy = conv2([-1 -2 -1; 0 0 0; 1 2 1], imgray);
-# gradient = sqrt((dx.*dx) + (dy.*dy));
-# max_val = max(max(gradient));
-# min_val = min(min(gradient));
-# norm_gradient = uint8(round(255*(gradient-min_val)/(max_val-min_val)));
-# end
 
 def edge_detection(im):
+    im = cv.adaptiveThreshold(im, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+    im = cv.GaussianBlur( im, (3,3), 0);
     dx = cv.Sobel(im, cv.CV_64F, 1, 0, ksize=5)
     dy = cv.Sobel(im, cv.CV_64F, 0, 1, ksize=5)
     gradient = np.sqrt(np.multiply(dx, dx) + np.multiply(dy, dy))
@@ -38,8 +32,6 @@ def crop_image(im, w, h):
     val2 = colsum[idx2+h_mid]
     val3 = rowsum[6+idx3]
     val4 = rowsum[idx4+w_mid]
-    # print(rowsum.size)
-    # print(val1+val2+val3+val4, idx1, idx2, idx3, idx4)
     threshold = np.double(0.02)
     if val1 + val2 + val3 + val4 < threshold*np.double(np.sum(colsum)):
         return im
@@ -76,19 +68,12 @@ def testing():
     slide_index = 0
     correct = 0
     wrong = 0
-    # f = open("errors_v2.txt", "a+")
-    # f.write("Slide name --- Ppt name predicted")
     for img in tqdm(slides):
         mx = -100000.0
         idx = -1
         ppt_index = 0
         for possibility in ppt:
-            # print(img.shape, possibility.size)
             h, w = img.shape 
-            # cur_max = (np.square(img - cv.resize(possibility, (w, h)))).mean(axis=None)
-            # print((np.corrcoef(img, cv.resize(possibility, (w, h)))).dtype)
-            # cur_max = (np.corrcoef(img, cv.resize(possibility, (w, h))))[1][0]
-            # print(cur_max,mx)
             img_mean = img.mean()
             img_dev = img.std()
             img_normalized = [(x - img_mean)/img_dev for x in img]
@@ -100,18 +85,14 @@ def testing():
             denominator = np.sqrt(np.multiply(np.sum(np.square(img_normalized)), 
                 np.sum(np.square(resized_possibility))))
             cur_max = numerator/denominator
-            # print(numerator, denominator, cur_max)
             if cur_max > mx:
                 mx = cur_max
                 idx = ppt_index
             ppt_index = ppt_index + 1
-            # print(cur_max)
         if ans_range[idx][0] > slide_index or ans_range[idx][1] < slide_index:
-            # slide_index = slide_index + 1
-            # continue
             print(ans_range[idx], slide_index)
             print("Error ",slide_name[slide_index], " ",ppt_name[idx]," ", cur_max)
-            newpath = os.path.join("Error_v5", str(wrong))
+            newpath = os.path.join("Error_v6", str(wrong))
             if not os.path.exists(newpath):
                 os.makedirs(newpath)
             cv.imwrite(os.path.join(newpath , str(slide_name[slide_index])), slides[slide_index])
@@ -123,4 +104,3 @@ def testing():
         slide_index = slide_index + 1
     print("Correct : ", correct, "Wrong : ", wrong, "Total : ", correct+wrong)
 testing()
-#09_322.jpg   08_1ppt.jpg
