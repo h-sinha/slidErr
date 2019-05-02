@@ -48,7 +48,7 @@ def testing():
     ppt_name = []
     ans_range = []
     index = 0
-    img = cv.imread(os.path.join("Dataset", "12_9", "1.jpg"))
+    img = cv.imread(os.path.join("Dataset", "12_9", "ppt.jpg"))
     h, w, _ = img.shape
     imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     edgy = edge_detection(imgray)

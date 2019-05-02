@@ -18,29 +18,13 @@ def edge_detection(im):
     norm_gradient = np.around(255 * (gradient - min_val) / (max_val - min_val))
     norm_gradient = norm_gradient.astype(np.uint8)
     return norm_gradient
-
-
-def crop_image(im, w, h):
-    colsum = np.sum(im, axis=1)
-    rowsum = np.sum(im, axis=0)
-    w_mid = w // 2
-    h_mid = h // 2
-    idx1 = np.argmax(colsum[6:h_mid])
-    idx2 = np.argmax(colsum[h_mid:h - 6])
-    idx3 = np.argmax(rowsum[6:w_mid])
-    idx4 = np.argmax(rowsum[w_mid:w - 6])
-    val1 = colsum[idx1+6]
-    val2 = colsum[idx2+h_mid]
-    val3 = rowsum[6+idx3]
-    val4 = rowsum[idx4+w_mid]
-    threshold = np.double(0.02)
-    if val1 + val2 + val3 + val4 < threshold*np.double(np.sum(colsum)):
-        return im
-    else:
-        return im[idx1+6:idx2 + h_mid, idx3+6:idx4 + w_mid]
-def testing():
-    ppt_directory = sys.argv[1]
-    frame_directory = sys.argv[2]
+def match():
+    try:
+        ppt_directory = sys.argv[1]
+        frame_directory = sys.argv[2]
+    except:
+        print("Usage : python3 20171010.py <path/to/slides/directory> <path/to/frames/directory>")
+        return
     slides = []
     slide_name = []
     ppt = []
@@ -60,6 +44,7 @@ def testing():
         slides.append(img)
         slide_name.append(file)
     slide_index = 0
+    f = open("20171010.txt","w+")
     for img in slides:
         mx = -100000.0
         idx = -1
@@ -81,6 +66,7 @@ def testing():
                 mx = cur_max
                 idx = ppt_index
             ppt_index = ppt_index + 1
-        print(slide_name[slide_index]," ",ppt_name[idx])
+        f.write(slide_name[slide_index]+" "+ppt_name[idx]+"\n")
         slide_index = slide_index + 1
-testing()
+    f.close()
+match()
