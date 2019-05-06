@@ -5,6 +5,7 @@ Python program to automate matching of slides from video lectures with soft copy
 * OpenCV
 * Numpy
 ### Run Script
+```
 python main.py <path_to_slides> <path_to_frames>
-
+```
 For implementation details refer to [Report.pdf](../master/Report.pdf).
