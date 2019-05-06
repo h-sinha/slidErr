@@ -18,25 +18,6 @@ def edge_detection(im):
     norm_gradient = norm_gradient.astype(np.uint8)
     return norm_gradient
 
-
-def crop_image(im, w, h):
-    colsum = np.sum(im, axis=1)
-    rowsum = np.sum(im, axis=0)
-    w_mid = w // 2
-    h_mid = h // 2
-    idx1 = np.argmax(colsum[6:h_mid])
-    idx2 = np.argmax(colsum[h_mid:h - 6])
-    idx3 = np.argmax(rowsum[6:w_mid])
-    idx4 = np.argmax(rowsum[w_mid:w - 6])
-    val1 = colsum[idx1+6]
-    val2 = colsum[idx2+h_mid]
-    val3 = rowsum[6+idx3]
-    val4 = rowsum[idx4+w_mid]
-    threshold = np.double(0.02)
-    if val1 + val2 + val3 + val4 < threshold*np.double(np.sum(colsum)):
-        return im
-    else:
-        return im[idx1+6:idx2 + h_mid, idx3+6:idx4 + w_mid]
 def testing():
     slides = []
     slide_name = []
@@ -48,18 +29,14 @@ def testing():
         index_start = index
         for filename in os.listdir('Dataset/' + folder):
             img = cv.imread(os.path.join("Dataset", folder, filename))
-            # print(filename, folder)
             imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            # print(img.shape, folder, filename)
             h, w, _ = img.shape
             edgy = edge_detection(imgray)
             if filename == 'ppt.jpg':
-                # img = crop_image(edgy, w, h)
                 img = edgy
                 ppt.append(img)
                 ppt_name.append(folder+" "+filename)
             else:
-                # img = crop_image(edgy, w, h)
                 img = edgy
                 slide_name.append(folder+" "+filename)
                 slides.append(img)
